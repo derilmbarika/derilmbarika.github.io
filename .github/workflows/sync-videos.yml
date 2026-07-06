@@ -1,0 +1,43 @@
+name: Sync latest YouTube videos
+
+# Keeps the "Fresh from the channel" strip on derilmbarika.com in sync with the
+# YouTube channel feed. Runs daily and can be triggered by hand from the Actions
+# tab. Commits index.html back to main only when the latest videos changed,
+# which redeploys GitHub Pages automatically.
+
+on:
+  schedule:
+    - cron: "0 13 * * *" # every day at 13:00 UTC
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-videos
+  cancel-in-progress: true
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Sync latest videos into index.html
+        run: node scripts/sync-videos.mjs
+
+      - name: Commit if changed
+        run: |
+          if [[ -n "$(git status --porcelain index.html)" ]]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add index.html
+            git commit -m "Auto-sync latest YouTube videos"
+            git push
+          else
+            echo "No changes to commit."
+          fi

@@ -18,7 +18,7 @@
     stagger: 0.09,
     delay: 0.15
   });
-  gsap.from(".hero-sub, .hero .btn", {
+  gsap.from(".hero-sub, .hero-actions", {
     opacity: 0,
     y: 18,
     duration: 0.8,
@@ -43,7 +43,9 @@
   });
 
   // Sections: reveal on enter (hierarchy: one thing at a time).
-  gsap.utils.toArray(".work h2, .about h2, .about p, .connect h2, .connect .platforms, .connect-mail").forEach(function (el) {
+  gsap.utils.toArray(
+    ".work h2, .latest-head, .about h2, .about p, .kit h2, .kit-intro, .collab h2, .collab-lead, .collab-covered-label, .collab-covered, .collab-cta, .connect h2, .connect .platforms"
+  ).forEach(function (el) {
     gsap.from(el, {
       opacity: 0,
       y: 24,
@@ -53,11 +55,14 @@
     });
   });
 
-  ScrollTrigger.batch(".tile", {
-    start: "top 90%",
-    once: true,
-    onEnter: function (batch) {
-      gsap.from(batch, { opacity: 0, y: 28, duration: 0.7, ease: "power3.out", stagger: 0.08 });
-    }
+  // Card grids: staggered reveal as each grid enters.
+  [".tile", ".ltile", ".kit-card", ".collab-card"].forEach(function (sel) {
+    ScrollTrigger.batch(sel, {
+      start: "top 90%",
+      once: true,
+      onEnter: function (batch) {
+        gsap.from(batch, { opacity: 0, y: 28, duration: 0.7, ease: "power3.out", stagger: 0.08 });
+      }
+    });
   });
 })();
