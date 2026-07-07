@@ -141,3 +141,114 @@
       });
   });
 })();
+
+/* ── 3. Rotating 3D brand sphere ─────────────────────────────────────────
+   Reads the flat brand list and lays each brand out on a sphere that
+   auto-rotates and responds to drag. Depth drives scale, opacity and stacking
+   so front brands read large and bright, back ones recede. Degrades to the
+   flat list under reduced motion or without JS. */
+(function () {
+  var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var wrap = document.getElementById("brand-cloud");
+  if (!wrap || reduce) return;
+
+  var items = Array.prototype.map.call(wrap.querySelectorAll(".covered .brand"), function (li) {
+    return { name: li.getAttribute("data-name") || li.textContent.trim(), slug: (li.getAttribute("data-slug") || "").trim() };
+  });
+  if (items.length < 4) return;
+
+  var sphere = document.createElement("div");
+  sphere.className = "sphere";
+  var stage = document.createElement("div");
+  stage.className = "sphere__stage";
+  sphere.appendChild(stage);
+
+  // Fibonacci sphere: evenly distribute N points on a unit sphere.
+  var nodes = items.map(function (it, i) {
+    var offset = 2 / items.length;
+    var y = i * offset - 1 + offset / 2;
+    var r = Math.sqrt(Math.max(0, 1 - y * y));
+    var phi = i * Math.PI * (3 - Math.sqrt(5));
+    var el = document.createElement("div");
+    el.className = "node";
+    if (it.slug) {
+      el.innerHTML =
+        '<img src="https://cdn.simpleicons.org/' + it.slug + '/c9ccce" alt="' + it.name + '">' +
+        '<span class="node__cap">' + it.name + "</span>";
+      var img = el.querySelector("img");
+      img.onerror = function () { el.innerHTML = '<span class="node__word">' + it.name + "</span>"; };
+    } else {
+      el.innerHTML = '<span class="node__word">' + it.name + "</span>";
+    }
+    stage.appendChild(el);
+    return { el: el, x: Math.cos(phi) * r, y: y, z: Math.sin(phi) * r };
+  });
+
+  wrap.appendChild(sphere);
+  wrap.classList.add("is-3d");
+
+  var hint = document.createElement("p");
+  hint.className = "sphere-hint";
+  hint.textContent = "Drag to spin. Always adding more.";
+  wrap.appendChild(hint);
+
+  var R = 160;
+  function sizeRadius() {
+    var w = sphere.clientWidth, h = sphere.clientHeight;
+    R = Math.max(120, Math.min(w, h) / 2 - 46);
+  }
+  sizeRadius();
+  window.addEventListener("resize", sizeRadius);
+
+  var rotX = -0.25, rotY = 0, velX = 0, velY = 0.0025, dragging = false, lastX = 0, lastY = 0;
+  var BASE = 0.0025;
+
+  function render() {
+    if (!dragging) {
+      rotY += velY;
+      rotX += velX;
+      velY += (BASE - velY) * 0.03; // ease back to a gentle idle spin
+      velX *= 0.94;                 // let vertical tilt settle
+    }
+    var sinX = Math.sin(rotX), cosX = Math.cos(rotX);
+    var sinY = Math.sin(rotY), cosY = Math.cos(rotY);
+    for (var i = 0; i < nodes.length; i++) {
+      var n = nodes[i];
+      var x1 = n.x * cosY - n.z * sinY;
+      var z1 = n.x * sinY + n.z * cosY;
+      var y1 = n.y * cosX - z1 * sinX;
+      var z2 = n.y * sinX + z1 * cosX;
+      var depth = (z2 + 1) / 2;                 // 0 (back) .. 1 (front)
+      var scale = 0.55 + depth * 0.7;
+      n.el.style.transform =
+        "translate(-50%,-50%) translate3d(" + (x1 * R).toFixed(1) + "px," + (y1 * R).toFixed(1) + "px,0) scale(" + scale.toFixed(3) + ")";
+      n.el.style.opacity = (0.35 + depth * 0.65).toFixed(3);
+      n.el.style.zIndex = String(Math.round(depth * 100));
+    }
+    requestAnimationFrame(render);
+  }
+  requestAnimationFrame(render);
+
+  function down(e) {
+    dragging = true;
+    var p = e.touches ? e.touches[0] : e;
+    lastX = p.clientX; lastY = p.clientY;
+    velX = velY = 0;
+  }
+  function move(e) {
+    if (!dragging) return;
+    var p = e.touches ? e.touches[0] : e;
+    var dx = p.clientX - lastX, dy = p.clientY - lastY;
+    lastX = p.clientX; lastY = p.clientY;
+    rotY += dx * 0.006;
+    rotX += -dy * 0.006;
+    velY = dx * 0.006;
+    velX = -dy * 0.006;
+    if (e.cancelable) e.preventDefault();
+  }
+  function up() { dragging = false; }
+
+  sphere.addEventListener("pointerdown", down);
+  window.addEventListener("pointermove", move, { passive: false });
+  window.addEventListener("pointerup", up);
+})();
