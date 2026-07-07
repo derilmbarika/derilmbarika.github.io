@@ -156,6 +156,7 @@
     return {
       name: li.getAttribute("data-name") || li.textContent.trim(),
       slug: (li.getAttribute("data-slug") || "").trim(),
+      logo: (li.getAttribute("data-logo") || "").trim(),
       color: (li.getAttribute("data-color") || "").trim()
     };
   });
@@ -163,16 +164,24 @@
 
   var sphere = document.createElement("div");
   sphere.className = "sphere";
-  sphere.innerHTML = '<div class="sphere__glow"></div><div class="sphere__ring"></div><div class="sphere__ring"></div>';
+  sphere.innerHTML =
+    '<div class="sphere__glow"></div>' +
+    '<div class="sphere__orbits">' +
+      '<div class="orbit orbit--1"></div><div class="orbit orbit--2"></div><div class="orbit orbit--3"></div>' +
+      '<div class="electron electron--1"><i class="electron__dot"></i></div>' +
+      '<div class="electron electron--2"><i class="electron__dot"></i></div>' +
+    '</div>';
   var stage = document.createElement("div");
   stage.className = "sphere__stage";
   sphere.appendChild(stage);
 
   // Each brand is a light tile (so any logo colour, even black, stays visible)
-  // carrying its real logo in the brand colour, with a caption below.
+  // carrying its real logo, with a caption below. data-logo overrides the source
+  // for brands that have a nicer full-colour logo elsewhere.
   function tileHTML(it) {
-    var inner = it.slug
-      ? '<img src="https://cdn.simpleicons.org/' + it.slug + '" alt="' + it.name + '">'
+    var src = it.logo || (it.slug ? "https://cdn.simpleicons.org/" + it.slug : "");
+    var inner = src
+      ? '<img src="' + src + '" alt="' + it.name + '">'
       : '<span class="node__word" style="color:' + (it.color || "#1b1b1b") + '">' + it.name + "</span>";
     return '<span class="node__tile">' + inner + "</span><span class=\"node__cap\">" + it.name + "</span>";
   }
@@ -290,4 +299,128 @@
   sphere.addEventListener("pointerdown", down);
   window.addEventListener("pointermove", moveDrag, { passive: false });
   window.addEventListener("pointerup", up);
+})();
+
+/* ── 4. Hero interactive particle field ──────────────────────────────────
+   A drifting constellation behind the intro. Moving the cursor pulls a web of
+   lines toward it and leaves a fading trail, so the effect "carries" as the
+   pointer drives through. Skipped under reduced motion or without canvas. */
+(function () {
+  var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var canvas = document.querySelector(".hero-fx");
+  if (!canvas || reduce || !canvas.getContext) return;
+  var ctx = canvas.getContext("2d");
+  if (!ctx) return;
+
+  var hero = canvas.closest(".hero") || canvas.parentElement;
+  var dpr = Math.min(window.devicePixelRatio || 1, 2);
+  var W = 0, H = 0, particles = [], trail = [];
+  var mouse = { x: -9999, y: -9999, on: false };
+  var LINK = 130, MOUSE_LINK = 200, running = true;
+
+  function resize() {
+    var r = hero.getBoundingClientRect();
+    W = r.width; H = r.height;
+    canvas.width = Math.round(W * dpr);
+    canvas.height = Math.round(H * dpr);
+    canvas.style.width = W + "px";
+    canvas.style.height = H + "px";
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    var count = Math.max(28, Math.min(92, Math.round((W * H) / 15000)));
+    particles = [];
+    for (var i = 0; i < count; i++) {
+      particles.push({
+        x: Math.random() * W, y: Math.random() * H,
+        vx: (Math.random() - 0.5) * 0.28, vy: (Math.random() - 0.5) * 0.28
+      });
+    }
+  }
+  resize();
+  window.addEventListener("resize", resize);
+
+  hero.addEventListener("pointermove", function (e) {
+    var r = hero.getBoundingClientRect();
+    mouse.x = e.clientX - r.left; mouse.y = e.clientY - r.top; mouse.on = true;
+    trail.push({ x: mouse.x, y: mouse.y, life: 1 });
+    if (trail.length > 18) trail.shift();
+  });
+  hero.addEventListener("pointerleave", function () { mouse.on = false; });
+
+  // Pause the loop when the hero scrolls out of view.
+  if ("IntersectionObserver" in window) {
+    new IntersectionObserver(function (ents) { running = ents[0].isIntersecting; })
+      .observe(hero);
+  }
+
+  function frame() {
+    requestAnimationFrame(frame);
+    if (!running) return;
+    ctx.clearRect(0, 0, W, H);
+
+    for (var i = 0; i < particles.length; i++) {
+      var p = particles[i];
+      // Cursor pushes particles aside so it "carries" through the field.
+      if (mouse.on) {
+        var dx = p.x - mouse.x, dy = p.y - mouse.y;
+        var d2 = dx * dx + dy * dy;
+        if (d2 < 15000 && d2 > 0.01) {
+          var f = (15000 - d2) / 15000 * 0.9;
+          var d = Math.sqrt(d2);
+          p.vx += (dx / d) * f * 0.14;
+          p.vy += (dy / d) * f * 0.14;
+        }
+      }
+      p.x += p.vx; p.y += p.vy;
+      p.vx *= 0.96; p.vy *= 0.96;
+      // gentle idle drift so it never fully stops
+      p.vx += (Math.random() - 0.5) * 0.02;
+      p.vy += (Math.random() - 0.5) * 0.02;
+      if (p.x < 0) p.x += W; else if (p.x > W) p.x -= W;
+      if (p.y < 0) p.y += H; else if (p.y > H) p.y -= H;
+
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, 1.4, 0, 6.2832);
+      ctx.fillStyle = "rgba(240,239,236,0.55)";
+      ctx.fill();
+    }
+
+    // Links between nearby particles.
+    for (var a = 0; a < particles.length; a++) {
+      for (var b = a + 1; b < particles.length; b++) {
+        var pa = particles[a], pb = particles[b];
+        var ex = pa.x - pb.x, ey = pa.y - pb.y;
+        var dist = Math.sqrt(ex * ex + ey * ey);
+        if (dist < LINK) {
+          ctx.strokeStyle = "rgba(240,239,236," + (0.10 * (1 - dist / LINK)).toFixed(3) + ")";
+          ctx.lineWidth = 1;
+          ctx.beginPath(); ctx.moveTo(pa.x, pa.y); ctx.lineTo(pb.x, pb.y); ctx.stroke();
+        }
+      }
+    }
+
+    // Web of accent lines reaching toward the cursor.
+    if (mouse.on) {
+      for (var k = 0; k < particles.length; k++) {
+        var q = particles[k];
+        var mx = q.x - mouse.x, my = q.y - mouse.y;
+        var md = Math.sqrt(mx * mx + my * my);
+        if (md < MOUSE_LINK) {
+          ctx.strokeStyle = "rgba(224,82,74," + (0.5 * (1 - md / MOUSE_LINK)).toFixed(3) + ")";
+          ctx.lineWidth = 1;
+          ctx.beginPath(); ctx.moveTo(q.x, q.y); ctx.lineTo(mouse.x, mouse.y); ctx.stroke();
+        }
+      }
+    }
+
+    // Fading cursor trail.
+    for (var t = 0; t < trail.length; t++) {
+      var pt = trail[t];
+      pt.life *= 0.9;
+      ctx.beginPath();
+      ctx.arc(pt.x, pt.y, 2 + pt.life * 2, 0, 6.2832);
+      ctx.fillStyle = "rgba(255,106,96," + (pt.life * 0.4).toFixed(3) + ")";
+      ctx.fill();
+    }
+  }
+  requestAnimationFrame(frame);
 })();

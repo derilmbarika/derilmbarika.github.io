@@ -119,6 +119,7 @@ section h2 { font-weight: 700; letter-spacing: -0.02em; }
 
 /* ── hero ────────────────────────────────────────────── */
 .hero {
+  position: relative;
   min-height: 100dvh;
   display: grid;
   grid-template-columns: minmax(0, 6fr) minmax(0, 5fr);
@@ -128,6 +129,13 @@ section h2 { font-weight: 700; letter-spacing: -0.02em; }
   margin: 0 auto;
   padding: 96px var(--pad) 56px;
 }
+/* Interactive particle field: drifts, connects to the cursor and trails it. */
+.hero-fx {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  z-index: 0; pointer-events: none;
+}
+.hero-copy, .hero-frame { position: relative; z-index: 1; }
 .hero-title {
   font-size: clamp(2.3rem, 5.8vw, 4.8rem);
   line-height: 1.02;
@@ -300,13 +308,32 @@ section h2 { font-weight: 700; letter-spacing: -0.02em; }
   background: radial-gradient(circle at 50% 42%, rgba(224, 82, 74, 0.16), rgba(224, 82, 74, 0.05) 46%, transparent 70%);
   pointer-events: none;
 }
-.sphere__ring {
-  position: absolute; top: 50%; left: 50%;
-  width: min(66%, 440px); aspect-ratio: 1; transform: translate(-50%, -50%);
-  border: 1px solid rgba(240, 239, 236, 0.06); border-radius: 50%;
-  pointer-events: none;
+/* Atomic orbit rings + orbiting electrons behind the brand tiles. */
+.sphere__orbits { position: absolute; inset: 0; z-index: 0; pointer-events: none; transform-style: preserve-3d; }
+.orbit {
+  position: absolute; top: 50%; left: 50%; aspect-ratio: 1;
+  border: 1px solid rgba(224, 82, 74, 0.16); border-radius: 50%;
+  transform-style: preserve-3d;
 }
-.sphere__ring:nth-of-type(2) { width: min(50%, 330px); border-color: rgba(240, 239, 236, 0.05); }
+.orbit--1 { width: min(78%, 520px); animation: tumble1 22s linear infinite; }
+.orbit--2 { width: min(60%, 410px); border-color: rgba(240, 239, 236, 0.09); animation: tumble2 30s linear infinite; }
+.orbit--3 { width: min(70%, 470px); border-color: rgba(224, 82, 74, 0.10); animation: tumble3 26s linear infinite; }
+@keyframes tumble1 { from { transform: translate(-50%,-50%) rotateX(68deg) rotateY(0deg); } to { transform: translate(-50%,-50%) rotateX(68deg) rotateY(360deg); } }
+@keyframes tumble2 { from { transform: translate(-50%,-50%) rotateZ(58deg) rotateX(74deg) rotateY(360deg); } to { transform: translate(-50%,-50%) rotateZ(58deg) rotateX(74deg) rotateY(0deg); } }
+@keyframes tumble3 { from { transform: translate(-50%,-50%) rotateY(120deg) rotateX(60deg) rotateZ(0deg); } to { transform: translate(-50%,-50%) rotateY(480deg) rotateX(60deg) rotateZ(0deg); } }
+.electron { position: absolute; top: 50%; left: 50%; aspect-ratio: 1; transform-style: preserve-3d; }
+.electron__dot {
+  position: absolute; top: -4px; left: 50%; width: 9px; height: 9px; margin-left: -4.5px;
+  border-radius: 50%; background: var(--accent); box-shadow: 0 0 14px 2px rgba(224, 82, 74, 0.8);
+}
+.electron--1 { width: min(78%, 520px); animation: spinz1 9s linear infinite; }
+.electron--2 { width: min(70%, 470px); animation: spinz2 13s linear infinite; }
+.electron--2 .electron__dot { background: var(--accent-2); box-shadow: 0 0 14px 2px rgba(255, 106, 96, 0.7); }
+@keyframes spinz1 { from { transform: translate(-50%,-50%) rotateX(68deg) rotateZ(0deg); } to { transform: translate(-50%,-50%) rotateX(68deg) rotateZ(360deg); } }
+@keyframes spinz2 { from { transform: translate(-50%,-50%) rotateY(120deg) rotateX(60deg) rotateZ(360deg); } to { transform: translate(-50%,-50%) rotateY(120deg) rotateX(60deg) rotateZ(0deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .orbit, .electron { animation: none; }
+}
 .sphere__stage { position: absolute; inset: 0; transform-style: preserve-3d; z-index: 1; }
 .node {
   position: absolute; top: 50%; left: 50%;
