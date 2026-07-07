@@ -171,9 +171,8 @@ section h2 { font-weight: 700; letter-spacing: -0.02em; }
 
 /* ── work (asymmetric bento) ─────────────────────────── */
 .work { max-width: var(--maxw); margin: 0 auto; padding: clamp(72px, 10vw, 128px) var(--pad); }
-.work-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: clamp(14px, 2vw, 24px); }
-.tile { grid-column: span 2; display: block; }
-.tile-wide { grid-column: span 3; }
+.work-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: clamp(16px, 2vw, 26px); }
+.tile { display: block; }
 .tile-img { display: block; border-radius: var(--r-media); overflow: hidden; border: 1px solid var(--line); }
 .tile-img img {
   width: 100%; height: auto; display: block;
@@ -503,8 +502,7 @@ section h2 { font-weight: 700; letter-spacing: -0.02em; }
   .hero-frame { transform: rotate(0deg); max-width: 560px; }
   .about-grid { grid-template-columns: 1fr; gap: 32px; }
   .about-photo { max-width: 440px; }
-  .work-grid { grid-template-columns: 1fr; }
-  .tile, .tile-wide { grid-column: auto; }
+  .work-grid { grid-template-columns: repeat(2, 1fr); }
   .latest-rail { grid-template-columns: repeat(2, 1fr); }
   .offer-grid { grid-template-columns: 1fr; }
   .offer-lead { grid-column: auto; }
@@ -513,6 +511,7 @@ section h2 { font-weight: 700; letter-spacing: -0.02em; }
   .nav-links a[href="/#kit"], .nav-links a[href="/#collab"] { display: none; }
 }
 @media (max-width: 480px) {
+  .work-grid { grid-template-columns: 1fr; }
   .latest-rail { grid-template-columns: 1fr; }
   .kit-row { flex-direction: column; gap: 4px; align-items: flex-start; }
   .kit-name { text-align: left; }

@@ -80,8 +80,25 @@ async function main() {
   if (!res.ok) throw new Error(`Feed fetch failed: ${res.status}`);
   const xml = await res.text();
 
-  const entries = parseEntries(xml).slice(0, COUNT);
-  if (entries.length === 0) throw new Error("No entries parsed from feed");
+  const all = parseEntries(xml);
+  if (all.length === 0) throw new Error("No entries parsed from feed");
+
+  // Long-form only: a Short returns 200 at /shorts/{id}; a regular video
+  // 3xx-redirects to /watch. Skip Shorts, keep the newest COUNT long-form.
+  const entries = [];
+  for (const v of all) {
+    if (entries.length >= COUNT) break;
+    let isShort = false;
+    try {
+      const r = await fetch("https://www.youtube.com/shorts/" + v.id, {
+        redirect: "manual",
+        headers: { "User-Agent": "Mozilla/5.0" }
+      });
+      isShort = r.status === 200;
+    } catch { /* on error, keep the video rather than drop it */ }
+    if (!isShort) entries.push(v);
+  }
+  if (entries.length === 0) throw new Error("No long-form entries found");
 
   const block = `${START}\n${entries.map(tile).join("\n")}\n      ${END}`;
 
