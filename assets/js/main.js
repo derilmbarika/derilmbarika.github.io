@@ -31,7 +31,7 @@
 
   // Section headings and text blocks: fade up once on enter.
   var blocks = gsap.utils.toArray(
-    [".section-head", ".about-inner", ".kit-aside", ".collab-top", ".covered", ".contact-copy", ".cform"]
+    [".section-head", ".about-photo", ".about-inner", ".kit-aside", ".collab-top", ".covered", ".contact-copy", ".cform", ".news-inner"]
   );
   blocks.forEach(function (el) {
     gsap.from(el, {
@@ -470,17 +470,15 @@
   });
 })();
 
-/* ── 6. Newsletter email capture ─────────────────────────────────────────
-   Posts the email to Web3Forms (same key as the collab form). Until a key is
-   set it opens a pre-filled email so nothing is broken. */
+/* ── 6. Newsletter email capture (Kit / ConvertKit) ──────────────────────
+   The form natively posts the email to Kit through a hidden iframe (no page
+   navigation, no API key in the page). Until a real form id is set it falls
+   back to opening a pre-filled email so nothing is broken. */
 (function () {
   var form = document.getElementById("news-form");
   if (!form) return;
   var statusEl = form.parentNode.querySelector(".news-status");
-  var btn = form.querySelector("button");
-  var keyField = form.querySelector('input[name="access_key"]');
-  var key = keyField ? keyField.value.trim() : "";
-  var useApi = key && key.indexOf("REPLACE_WITH") === -1;
+  var configured = form.getAttribute("action").indexOf("KIT_FORM_ID") === -1;
 
   function setStatus(msg, kind) {
     if (!statusEl) return;
@@ -489,13 +487,13 @@
   }
 
   form.addEventListener("submit", function (e) {
-    e.preventDefault();
     var hp = form.querySelector('[name="botcheck"]');
-    if (hp && hp.checked) return;
-    if (!form.checkValidity()) { form.reportValidity(); return; }
+    if (hp && hp.checked) { e.preventDefault(); return; }
+    if (!form.checkValidity()) { e.preventDefault(); form.reportValidity(); return; }
     var email = document.getElementById("news-email").value.trim();
 
-    if (!useApi) {
+    if (!configured) {
+      e.preventDefault();
       window.location.href =
         "mailto:collaborations@derilmbarika.com?subject=" +
         encodeURIComponent("Subscribe me") +
@@ -504,25 +502,11 @@
       return;
     }
 
-    var original = btn.textContent;
-    btn.disabled = true; btn.textContent = "...";
+    // Configured: let the native POST reach Kit via the hidden iframe.
     setStatus("Subscribing...");
-    fetch("https://api.web3forms.com/submit", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Accept: "application/json" },
-      body: JSON.stringify({
-        access_key: key,
-        subject: "New subscriber from derilmbarika.com",
-        from_name: "derilmbarika.com newsletter",
-        email: email
-      })
-    })
-      .then(function (r) { return r.json(); })
-      .then(function (res) {
-        if (res.success) { form.reset(); setStatus("You're in. Thanks for subscribing.", "ok"); }
-        else { setStatus("Something went wrong. Try again in a moment.", "err"); }
-      })
-      .catch(function () { setStatus("Network error. Please try again.", "err"); })
-      .finally(function () { btn.disabled = false; btn.textContent = original; });
+    window.setTimeout(function () {
+      setStatus("You're in. Check your inbox to confirm.", "ok");
+      form.reset();
+    }, 1200);
   });
 })();

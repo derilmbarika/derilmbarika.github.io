@@ -166,11 +166,20 @@
   </section>
 
   <section class="about" id="about">
-    <div class="about-inner">
-      <p class="about-kicker">About</p>
-      <h2>Honest reviews. Cinematic frames.</h2>
-      <p>I cover laptops, phones and cameras: MacBook and Windows, iPhone and Samsung, Sony and DJI, and the gadgets that quietly make life easier. Long-form reviews on YouTube, fast takes everywhere else. If a product is mid, I say so.</p>
-      <p class="about-pillars"><span>Laptops &amp; PCs</span><span>Phones</span><span>Cameras</span><span>Creator gear</span></p>
+    <div class="about-grid">
+      <figure class="about-photo">
+        <!-- Save your attached photo to assets/img/deril.jpg and it appears here. -->
+        <img src="assets/img/deril.jpg" alt="Deril Mbarika" loading="lazy" width="1080" height="1350" onerror="this.closest('.about-photo').classList.add('is-missing')">
+      </figure>
+      <div class="about-inner">
+        <p class="about-kicker">About me</p>
+        <h2>It started with a how-to, in Cameroon.</h2>
+        <p>My love for making videos started young, back home in Cameroon. One of the first things I ever filmed was a simple guide showing people how to connect a gas bottle to a gas plate. It sounds small, but it is the whole reason I do this. I have always been driven to show people how things are done.</p>
+        <p>If you know me, you know I want the best for the people around me. I care so much that I will get on your case, and yes, sometimes I get irritated, all because I do not want you to repeat the mistakes I have already lived through. My friends were never enough for that instinct, so now I make videos to reach further, to teach and to inspire whoever is watching.</p>
+        <p>I do this for the love first, before anything else.</p>
+        <blockquote class="about-quote">The only reason you ever fail is because you gave up.</blockquote>
+        <p class="about-pillars"><span>Laptops &amp; PCs</span><span>Phones</span><span>Cameras</span><span>Creator gear</span></p>
+      </div>
     </div>
   </section>
 
@@ -309,17 +318,16 @@
     <div class="news-inner">
       <h2>Get new videos and gear drops</h2>
       <p>Leave your email. No spam, just what I publish and what I add to the kit.</p>
-      <!-- Saves to your list via Web3Forms (same free key as the collab form).
-           Until a key is set, it opens a pre-filled email instead. -->
-      <form class="news-form" id="news-form" action="https://api.web3forms.com/submit" method="POST" novalidate>
-        <input type="hidden" name="access_key" value="REPLACE_WITH_WEB3FORMS_ACCESS_KEY">
-        <input type="hidden" name="subject" value="New subscriber from derilmbarika.com">
-        <input type="hidden" name="from_name" value="derilmbarika.com newsletter">
+      <!-- Saves to your Kit (ConvertKit) list. Replace KIT_FORM_ID in the action
+           below with your form id (Kit dashboard > Grow > Landing Pages & Forms >
+           create form > the number in its URL). Until then it opens an email. -->
+      <form class="news-form" id="news-form" action="https://app.kit.com/forms/KIT_FORM_ID/subscriptions" method="post" target="news-sink" novalidate>
         <input type="checkbox" name="botcheck" class="hp-field" tabindex="-1" autocomplete="off" aria-hidden="true">
         <label class="sr-only" for="news-email">Email address</label>
-        <input id="news-email" name="email" type="email" placeholder="you@email.com" autocomplete="email" required>
+        <input id="news-email" name="email_address" type="email" placeholder="you@email.com" autocomplete="email" required>
         <button type="submit" class="btn">Subscribe</button>
       </form>
+      <iframe name="news-sink" class="sr-only" title="subscribe" tabindex="-1" aria-hidden="true"></iframe>
       <p class="news-status" role="status" aria-live="polite"></p>
     </div>
   </section>
