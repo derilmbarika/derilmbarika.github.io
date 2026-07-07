@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://derilmbarika.com/sitemap.xml
