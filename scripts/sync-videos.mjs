@@ -16,7 +16,7 @@ import { dirname, resolve } from "node:path";
 
 const CHANNEL_ID = "UCiNk0ioqmhaeCyBbqyY_nCw";
 const FEED = `https://www.youtube.com/feeds/videos.xml?channel_id=${CHANNEL_ID}`;
-const COUNT = 3;
+const COUNT = 4;
 
 const here = dirname(fileURLToPath(import.meta.url));
 const INDEX = resolve(here, "..", "index.html");

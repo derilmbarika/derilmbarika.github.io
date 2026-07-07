@@ -41,7 +41,7 @@
   });
 
   // Card grids and rows: batched stagger as each group enters.
-  [".tile", ".ltile", ".kit-row", ".offer"].forEach(function (sel) {
+  [".tile", ".ltile", ".gear-row", ".offer"].forEach(function (sel) {
     ScrollTrigger.batch(sel, {
       start: "top 88%",
       once: true,
@@ -426,4 +426,103 @@
     }
   }
   requestAnimationFrame(frame);
+})();
+
+/* ── 5. Hover-to-preview on the latest videos ────────────────────────────
+   On hover, swap the thumbnail for a muted autoplaying YouTube embed so the
+   video previews in place; restore the thumbnail on leave. */
+(function () {
+  var tiles = document.querySelectorAll(".latest-rail .ltile");
+  if (!tiles.length || !window.matchMedia("(hover: hover)").matches) return;
+
+  Array.prototype.forEach.call(tiles, function (tile) {
+    var img = tile.querySelector("img");
+    if (!img) return;
+    var m = tile.href.match(/[?&]v=([\w-]{11})/);
+    if (!m) return;
+    var id = m[1];
+
+    // Wrap the thumbnail so the preview iframe can overlay it.
+    var thumb = document.createElement("span");
+    thumb.className = "ltile-thumb";
+    img.parentNode.insertBefore(thumb, img);
+    thumb.appendChild(img);
+
+    var iframe = null, timer = null;
+    tile.addEventListener("mouseenter", function () {
+      timer = window.setTimeout(function () {
+        if (iframe) return;
+        iframe = document.createElement("iframe");
+        iframe.className = "ltile-video";
+        iframe.src = "https://www.youtube-nocookie.com/embed/" + id +
+          "?autoplay=1&mute=1&controls=0&loop=1&playlist=" + id +
+          "&modestbranding=1&playsinline=1&rel=0";
+        iframe.setAttribute("allow", "autoplay; encrypted-media");
+        iframe.setAttribute("tabindex", "-1");
+        iframe.setAttribute("aria-hidden", "true");
+        thumb.appendChild(iframe);
+      }, 220); // small delay so a quick pass-through doesn't load a video
+    });
+    tile.addEventListener("mouseleave", function () {
+      if (timer) { window.clearTimeout(timer); timer = null; }
+      if (iframe) { iframe.remove(); iframe = null; }
+    });
+  });
+})();
+
+/* ── 6. Newsletter email capture ─────────────────────────────────────────
+   Posts the email to Web3Forms (same key as the collab form). Until a key is
+   set it opens a pre-filled email so nothing is broken. */
+(function () {
+  var form = document.getElementById("news-form");
+  if (!form) return;
+  var statusEl = form.parentNode.querySelector(".news-status");
+  var btn = form.querySelector("button");
+  var keyField = form.querySelector('input[name="access_key"]');
+  var key = keyField ? keyField.value.trim() : "";
+  var useApi = key && key.indexOf("REPLACE_WITH") === -1;
+
+  function setStatus(msg, kind) {
+    if (!statusEl) return;
+    statusEl.textContent = msg;
+    statusEl.className = "news-status" + (kind ? " is-" + kind : "");
+  }
+
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    var hp = form.querySelector('[name="botcheck"]');
+    if (hp && hp.checked) return;
+    if (!form.checkValidity()) { form.reportValidity(); return; }
+    var email = document.getElementById("news-email").value.trim();
+
+    if (!useApi) {
+      window.location.href =
+        "mailto:collaborations@derilmbarika.com?subject=" +
+        encodeURIComponent("Subscribe me") +
+        "&body=" + encodeURIComponent("Please add me to your list: " + email);
+      setStatus("Opening your email app to confirm.");
+      return;
+    }
+
+    var original = btn.textContent;
+    btn.disabled = true; btn.textContent = "...";
+    setStatus("Subscribing...");
+    fetch("https://api.web3forms.com/submit", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify({
+        access_key: key,
+        subject: "New subscriber from derilmbarika.com",
+        from_name: "derilmbarika.com newsletter",
+        email: email
+      })
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (res) {
+        if (res.success) { form.reset(); setStatus("You're in. Thanks for subscribing.", "ok"); }
+        else { setStatus("Something went wrong. Try again in a moment.", "err"); }
+      })
+      .catch(function () { setStatus("Network error. Please try again.", "err"); })
+      .finally(function () { btn.disabled = false; btn.textContent = original; });
+  });
 })();

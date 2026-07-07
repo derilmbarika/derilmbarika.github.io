@@ -157,6 +157,10 @@
         <img loading="lazy" src="https://i.ytimg.com/vi/BG-bL1Qty9o/mqdefault.jpg" alt="" width="320" height="180">
         <span class="ltile-title">Sony and Canon Just Started a Camera War…</span>
       </a>
+      <a class="ltile" href="https://www.youtube.com/watch?v=B7WMth6FIqQ" target="_blank" rel="noopener">
+        <img loading="lazy" src="https://i.ytimg.com/vi/B7WMth6FIqQ/mqdefault.jpg" alt="" width="320" height="180">
+        <span class="ltile-title">M4 vs M5 MacBook Pro  The Honest Truth After 30 Days of Real Use</span>
+      </a>
       <!-- LATEST:END -->
     </div>
   </section>
@@ -172,17 +176,36 @@
 
   <section class="kit" id="kit">
     <div class="kit-aside">
-      <h2>My kit</h2>
-      <p>The gear I shoot, edit and review on. Full list and links live in my video descriptions.</p>
+      <h2>Camera gear I use</h2>
+      <p>Everything I shoot, record and edit on. Some are affiliate links, which support the channel at no extra cost to you.</p>
     </div>
-    <ul class="kit-list">
-      <li class="kit-row"><span class="kit-role">Main camera</span><strong class="kit-name">Sony FX3</strong></li>
-      <li class="kit-row"><span class="kit-role">Everyday lens</span><strong class="kit-name">Sony G Master 24-70mm</strong></li>
-      <li class="kit-row"><span class="kit-role">Edit machine</span><strong class="kit-name">MacBook Pro</strong></li>
-      <li class="kit-row"><span class="kit-role">On-camera audio</span><strong class="kit-name">DJI Mic 3</strong></li>
-      <li class="kit-row"><span class="kit-role">Key light</span><strong class="kit-name">Aputure lighting</strong></li>
-      <li class="kit-row"><span class="kit-role">Motion</span><strong class="kit-name">DJI gimbal</strong></li>
-    </ul>
+    <!-- To add a link later: change a plain <div class="gear-row"> into an
+         <a class="gear-row gear-row--link" href="AFFILIATE_URL" target="_blank"
+         rel="noopener sponsored"> and add <span class="gear-buy">Amazon</span>. -->
+    <div class="gear">
+      <div class="gear-group">
+        <p class="gear-cat">Cameras</p>
+        <a class="gear-row gear-row--link" href="https://amzn.to/4chl4Mw" target="_blank" rel="noopener sponsored"><span class="gear-name">Sony A7 IV</span><span class="gear-buy">Amazon</span></a>
+        <div class="gear-row"><span class="gear-name">Sony FX3</span></div>
+        <div class="gear-row"><span class="gear-name">DJI Osmo Pocket 3</span></div>
+      </div>
+      <div class="gear-group">
+        <p class="gear-cat">Lenses</p>
+        <div class="gear-row"><span class="gear-name">Sony 24-70mm f/2.8 GM II</span></div>
+        <a class="gear-row gear-row--link" href="https://amzn.to/4cgTfUC" target="_blank" rel="noopener sponsored"><span class="gear-name">Tamron 17-28mm f/2.8</span><span class="gear-buy">Amazon</span></a>
+        <div class="gear-row"><span class="gear-name">Sigma 10-18mm</span></div>
+      </div>
+      <div class="gear-group">
+        <p class="gear-cat">Audio</p>
+        <div class="gear-row"><span class="gear-name">Sony ECM-B10 shotgun mic</span></div>
+        <div class="gear-row"><span class="gear-name">DJI Mic 3</span></div>
+      </div>
+      <div class="gear-group">
+        <p class="gear-cat">Aerial &amp; edit</p>
+        <div class="gear-row"><span class="gear-name">DJI Mini 3 drone</span></div>
+        <a class="gear-row gear-row--link" href="https://amzn.to/41SIpPU" target="_blank" rel="noopener sponsored"><span class="gear-name">MacBook (M5)</span><span class="gear-buy">Amazon</span></a>
+      </div>
+    </div>
   </section>
 
   <section class="collab" id="collab">
@@ -279,6 +302,25 @@
         <button type="submit" class="btn cform-submit">Send inquiry</button>
         <p class="cform-status" role="status" aria-live="polite"></p>
       </form>
+    </div>
+  </section>
+
+  <section class="news" id="subscribe">
+    <div class="news-inner">
+      <h2>Get new videos and gear drops</h2>
+      <p>Leave your email. No spam, just what I publish and what I add to the kit.</p>
+      <!-- Saves to your list via Web3Forms (same free key as the collab form).
+           Until a key is set, it opens a pre-filled email instead. -->
+      <form class="news-form" id="news-form" action="https://api.web3forms.com/submit" method="POST" novalidate>
+        <input type="hidden" name="access_key" value="REPLACE_WITH_WEB3FORMS_ACCESS_KEY">
+        <input type="hidden" name="subject" value="New subscriber from derilmbarika.com">
+        <input type="hidden" name="from_name" value="derilmbarika.com newsletter">
+        <input type="checkbox" name="botcheck" class="hp-field" tabindex="-1" autocomplete="off" aria-hidden="true">
+        <label class="sr-only" for="news-email">Email address</label>
+        <input id="news-email" name="email" type="email" placeholder="you@email.com" autocomplete="email" required>
+        <button type="submit" class="btn">Subscribe</button>
+      </form>
+      <p class="news-status" role="status" aria-live="polite"></p>
     </div>
   </section>
 
