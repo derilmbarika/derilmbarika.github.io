@@ -246,6 +246,12 @@ section h2 { font-weight: 700; letter-spacing: -0.02em; }
   line-height: 1.2; color: var(--text);
 }
 .about-pillars { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 32px; }
+/* Standalone About page: clear the fixed nav and add a bottom CTA. */
+.about-page .about { padding-top: clamp(112px, 15vh, 180px); border-top: 0; }
+.about-cta { margin-top: 34px; display: flex; flex-wrap: wrap; gap: 14px; }
+.footer a { color: var(--text); border-bottom: 1px solid var(--line-2); transition: color 0.25s var(--ease), border-color 0.25s var(--ease); }
+.footer a:hover { color: var(--accent); border-color: var(--accent); }
+.nav-links a[aria-current="page"] { color: var(--text); }
 .about-pillars span {
   border: 1px solid var(--line-2); border-radius: 999px;
   padding: 8px 18px; font-size: 14.5px; color: var(--text);
@@ -503,7 +509,8 @@ section h2 { font-weight: 700; letter-spacing: -0.02em; }
   .offer-grid { grid-template-columns: 1fr; }
   .offer-lead { grid-column: auto; }
   .contact { grid-template-columns: 1fr; }
-  .nav-links a[href="#kit"], .nav-links a[href="#collab"] { display: none; }
+  .nav-links a[href="#kit"], .nav-links a[href="#collab"],
+  .nav-links a[href="/#kit"], .nav-links a[href="/#collab"] { display: none; }
 }
 @media (max-width: 480px) {
   .latest-rail { grid-template-columns: 1fr; }
