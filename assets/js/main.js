@@ -153,15 +153,29 @@
   if (!wrap || reduce) return;
 
   var items = Array.prototype.map.call(wrap.querySelectorAll(".covered .brand"), function (li) {
-    return { name: li.getAttribute("data-name") || li.textContent.trim(), slug: (li.getAttribute("data-slug") || "").trim() };
+    return {
+      name: li.getAttribute("data-name") || li.textContent.trim(),
+      slug: (li.getAttribute("data-slug") || "").trim(),
+      color: (li.getAttribute("data-color") || "").trim()
+    };
   });
   if (items.length < 4) return;
 
   var sphere = document.createElement("div");
   sphere.className = "sphere";
+  sphere.innerHTML = '<div class="sphere__glow"></div><div class="sphere__ring"></div><div class="sphere__ring"></div>';
   var stage = document.createElement("div");
   stage.className = "sphere__stage";
   sphere.appendChild(stage);
+
+  // Each brand is a light tile (so any logo colour, even black, stays visible)
+  // carrying its real logo in the brand colour, with a caption below.
+  function tileHTML(it) {
+    var inner = it.slug
+      ? '<img src="https://cdn.simpleicons.org/' + it.slug + '" alt="' + it.name + '">'
+      : '<span class="node__word" style="color:' + (it.color || "#1b1b1b") + '">' + it.name + "</span>";
+    return '<span class="node__tile">' + inner + "</span><span class=\"node__cap\">" + it.name + "</span>";
+  }
 
   // Fibonacci sphere: evenly distribute N points on a unit sphere.
   var nodes = items.map(function (it, i) {
@@ -171,17 +185,16 @@
     var phi = i * Math.PI * (3 - Math.sqrt(5));
     var el = document.createElement("div");
     el.className = "node";
-    if (it.slug) {
-      el.innerHTML =
-        '<img src="https://cdn.simpleicons.org/' + it.slug + '/c9ccce" alt="' + it.name + '">' +
-        '<span class="node__cap">' + it.name + "</span>";
-      var img = el.querySelector("img");
-      img.onerror = function () { el.innerHTML = '<span class="node__word">' + it.name + "</span>"; };
-    } else {
-      el.innerHTML = '<span class="node__word">' + it.name + "</span>";
+    el.innerHTML = tileHTML(it);
+    var img = el.querySelector("img");
+    if (img) {
+      img.onerror = function () {
+        el.querySelector(".node__tile").innerHTML =
+          '<span class="node__word" style="color:' + (it.color || "#1b1b1b") + '">' + it.name + "</span>";
+      };
     }
     stage.appendChild(el);
-    return { el: el, x: Math.cos(phi) * r, y: y, z: Math.sin(phi) * r };
+    return { el: el, tile: el.querySelector(".node__tile"), x: Math.cos(phi) * r, y: y, z: Math.sin(phi) * r };
   });
 
   wrap.appendChild(sphere);
@@ -192,24 +205,33 @@
   hint.textContent = "Drag to spin. Always adding more.";
   wrap.appendChild(hint);
 
-  var R = 160;
-  function sizeRadius() {
-    var w = sphere.clientWidth, h = sphere.clientHeight;
-    R = Math.max(120, Math.min(w, h) / 2 - 46);
+  var R = 170, rect = null;
+  function measure() {
+    R = Math.max(130, Math.min(sphere.clientWidth, sphere.clientHeight) / 2 - 52);
+    rect = sphere.getBoundingClientRect();
   }
-  sizeRadius();
-  window.addEventListener("resize", sizeRadius);
+  measure();
+  window.addEventListener("resize", measure);
+  window.addEventListener("scroll", function () { rect = sphere.getBoundingClientRect(); }, { passive: true });
 
-  var rotX = -0.25, rotY = 0, velX = 0, velY = 0.0025, dragging = false, lastX = 0, lastY = 0;
-  var BASE = 0.0025;
+  // Motion: a steady idle tumble, plus pointer-follow so it drifts toward the
+  // cursor even without dragging. Dragging takes direct control.
+  var rotX = -0.3, rotY = 0;
+  var velX = 0, velY = 0.006;
+  var targetVX = 0, targetVY = 0.006;
+  var dragging = false, lastX = 0, lastY = 0;
 
   function render() {
-    if (!dragging) {
-      rotY += velY;
-      rotX += velX;
-      velY += (BASE - velY) * 0.03; // ease back to a gentle idle spin
-      velX *= 0.94;                 // let vertical tilt settle
+    if (dragging) {
+      // velocity set directly by drag handler
+    } else {
+      velY += (targetVY - velY) * 0.05;
+      velX += (targetVX - velX) * 0.05;
     }
+    rotY += velY;
+    rotX += velX;
+    rotX = Math.max(-1.1, Math.min(1.1, rotX)); // keep poles from flipping
+
     var sinX = Math.sin(rotX), cosX = Math.cos(rotX);
     var sinY = Math.sin(rotY), cosY = Math.cos(rotY);
     for (var i = 0; i < nodes.length; i++) {
@@ -218,37 +240,54 @@
       var z1 = n.x * sinY + n.z * cosY;
       var y1 = n.y * cosX - z1 * sinX;
       var z2 = n.y * sinX + z1 * cosX;
-      var depth = (z2 + 1) / 2;                 // 0 (back) .. 1 (front)
-      var scale = 0.55 + depth * 0.7;
+      var depth = (z2 + 1) / 2; // 0 back .. 1 front
+      var scale = 0.5 + depth * 0.75;
       n.el.style.transform =
         "translate(-50%,-50%) translate3d(" + (x1 * R).toFixed(1) + "px," + (y1 * R).toFixed(1) + "px,0) scale(" + scale.toFixed(3) + ")";
-      n.el.style.opacity = (0.35 + depth * 0.65).toFixed(3);
+      n.el.style.opacity = (0.3 + depth * 0.7).toFixed(3);
       n.el.style.zIndex = String(Math.round(depth * 100));
+      var blur = (1 - depth) * 2.2;
+      n.tile.style.filter = blur > 0.15 ? "blur(" + blur.toFixed(2) + "px)" : "none";
     }
     requestAnimationFrame(render);
   }
   requestAnimationFrame(render);
 
+  // Pointer-follow when idle: cursor position sets the target spin/tilt.
+  window.addEventListener("pointermove", function (e) {
+    if (dragging || !rect) return;
+    var nx = (e.clientX - (rect.left + rect.width / 2)) / (rect.width / 2);
+    var ny = (e.clientY - (rect.top + rect.height / 2)) / (rect.height / 2);
+    if (nx < -1.6 || nx > 1.6 || ny < -1.6 || ny > 1.6) {
+      targetVY = 0.006; targetVX = 0; return; // cursor far away: idle spin
+    }
+    targetVY = 0.006 + nx * 0.02;
+    targetVX = -ny * 0.014;
+  });
+
+  // Drag for direct control, with momentum on release.
   function down(e) {
     dragging = true;
     var p = e.touches ? e.touches[0] : e;
     lastX = p.clientX; lastY = p.clientY;
-    velX = velY = 0;
   }
-  function move(e) {
+  function moveDrag(e) {
     if (!dragging) return;
     var p = e.touches ? e.touches[0] : e;
     var dx = p.clientX - lastX, dy = p.clientY - lastY;
     lastX = p.clientX; lastY = p.clientY;
-    rotY += dx * 0.006;
-    rotX += -dy * 0.006;
-    velY = dx * 0.006;
-    velX = -dy * 0.006;
+    velY = dx * 0.007;
+    velX = -dy * 0.007;
+    rotY += velY;
+    rotX += velX;
     if (e.cancelable) e.preventDefault();
   }
-  function up() { dragging = false; }
-
+  function up() {
+    if (!dragging) return;
+    dragging = false;
+    targetVY = 0.006; targetVX = 0; // ease back to idle spin
+  }
   sphere.addEventListener("pointerdown", down);
-  window.addEventListener("pointermove", move, { passive: false });
+  window.addEventListener("pointermove", moveDrag, { passive: false });
   window.addEventListener("pointerup", up);
 })();
