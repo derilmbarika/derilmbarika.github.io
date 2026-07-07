@@ -170,6 +170,9 @@
       '<div class="orbit orbit--1"></div><div class="orbit orbit--2"></div><div class="orbit orbit--3"></div>' +
       '<div class="electron electron--1"><i class="electron__dot"></i></div>' +
       '<div class="electron electron--2"><i class="electron__dot"></i></div>' +
+      '<div class="electron electron--3"><i class="electron__dot"></i></div>' +
+      '<div class="electron electron--4"><i class="electron__dot"></i></div>' +
+      '<div class="electron electron--5"><i class="electron__dot"></i></div>' +
     '</div>';
   var stage = document.createElement("div");
   stage.className = "sphere__stage";

@@ -312,25 +312,33 @@ section h2 { font-weight: 700; letter-spacing: -0.02em; }
 .sphere__orbits { position: absolute; inset: 0; z-index: 0; pointer-events: none; transform-style: preserve-3d; }
 .orbit {
   position: absolute; top: 50%; left: 50%; aspect-ratio: 1;
-  border: 1px solid rgba(224, 82, 74, 0.16); border-radius: 50%;
+  border: 1.5px solid rgba(224, 82, 74, 0.32); border-radius: 50%;
+  box-shadow: 0 0 22px rgba(224, 82, 74, 0.14);
   transform-style: preserve-3d;
 }
 .orbit--1 { width: min(78%, 520px); animation: tumble1 22s linear infinite; }
-.orbit--2 { width: min(60%, 410px); border-color: rgba(240, 239, 236, 0.09); animation: tumble2 30s linear infinite; }
-.orbit--3 { width: min(70%, 470px); border-color: rgba(224, 82, 74, 0.10); animation: tumble3 26s linear infinite; }
+.orbit--2 { width: min(60%, 410px); border-color: rgba(240, 239, 236, 0.20); box-shadow: 0 0 20px rgba(240, 239, 236, 0.06); animation: tumble2 30s linear infinite; }
+.orbit--3 { width: min(70%, 470px); border-color: rgba(224, 82, 74, 0.24); animation: tumble3 26s linear infinite; }
 @keyframes tumble1 { from { transform: translate(-50%,-50%) rotateX(68deg) rotateY(0deg); } to { transform: translate(-50%,-50%) rotateX(68deg) rotateY(360deg); } }
 @keyframes tumble2 { from { transform: translate(-50%,-50%) rotateZ(58deg) rotateX(74deg) rotateY(360deg); } to { transform: translate(-50%,-50%) rotateZ(58deg) rotateX(74deg) rotateY(0deg); } }
 @keyframes tumble3 { from { transform: translate(-50%,-50%) rotateY(120deg) rotateX(60deg) rotateZ(0deg); } to { transform: translate(-50%,-50%) rotateY(480deg) rotateX(60deg) rotateZ(0deg); } }
+
 .electron { position: absolute; top: 50%; left: 50%; aspect-ratio: 1; transform-style: preserve-3d; }
 .electron__dot {
-  position: absolute; top: -4px; left: 50%; width: 9px; height: 9px; margin-left: -4.5px;
-  border-radius: 50%; background: var(--accent); box-shadow: 0 0 14px 2px rgba(224, 82, 74, 0.8);
+  position: absolute; top: -5px; left: 50%; width: 10px; height: 10px; margin-left: -5px;
+  border-radius: 50%; background: var(--accent); box-shadow: 0 0 16px 3px rgba(224, 82, 74, 0.85);
 }
-.electron--1 { width: min(78%, 520px); animation: spinz1 9s linear infinite; }
-.electron--2 { width: min(70%, 470px); animation: spinz2 13s linear infinite; }
-.electron--2 .electron__dot { background: var(--accent-2); box-shadow: 0 0 14px 2px rgba(255, 106, 96, 0.7); }
-@keyframes spinz1 { from { transform: translate(-50%,-50%) rotateX(68deg) rotateZ(0deg); } to { transform: translate(-50%,-50%) rotateX(68deg) rotateZ(360deg); } }
-@keyframes spinz2 { from { transform: translate(-50%,-50%) rotateY(120deg) rotateX(60deg) rotateZ(360deg); } to { transform: translate(-50%,-50%) rotateY(120deg) rotateX(60deg) rotateZ(0deg); } }
+/* Two electrons ride each orbit plane, offset by a negative delay. */
+.electron--1 { width: min(78%, 520px); animation: spinP1 8s linear infinite; }
+.electron--4 { width: min(78%, 520px); animation: spinP1 8s linear infinite; animation-delay: -4s; }
+.electron--2 { width: min(70%, 470px); animation: spinP3 13s linear infinite; }
+.electron--5 { width: min(70%, 470px); animation: spinP3 13s linear infinite; animation-delay: -7s; }
+.electron--3 { width: min(60%, 410px); animation: spinP2 10s linear infinite reverse; }
+.electron--2 .electron__dot, .electron--5 .electron__dot { background: var(--accent-2); box-shadow: 0 0 16px 3px rgba(255, 106, 96, 0.75); }
+.electron--3 .electron__dot { background: #f0efec; box-shadow: 0 0 14px 3px rgba(240, 239, 236, 0.6); }
+@keyframes spinP1 { from { transform: translate(-50%,-50%) rotateX(68deg) rotateZ(0deg); } to { transform: translate(-50%,-50%) rotateX(68deg) rotateZ(360deg); } }
+@keyframes spinP2 { from { transform: translate(-50%,-50%) rotateZ(58deg) rotateX(74deg) rotateZ(0deg); } to { transform: translate(-50%,-50%) rotateZ(58deg) rotateX(74deg) rotateZ(360deg); } }
+@keyframes spinP3 { from { transform: translate(-50%,-50%) rotateY(120deg) rotateX(60deg) rotateZ(360deg); } to { transform: translate(-50%,-50%) rotateY(120deg) rotateX(60deg) rotateZ(0deg); } }
 @media (prefers-reduced-motion: reduce) {
   .orbit, .electron { animation: none; }
 }
